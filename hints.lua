@@ -20,14 +20,20 @@ local modalKey = nil
 
 local bumpThresh = 40^2
 local bumpMove = 80
-function hints._bumpPos(x,y)
+
+-- Fits the position in a free slot,
+-- moving it around until a free one is found.
+function hints._bumpPos(x,y,i)
+  i = i or 0
+  local xx = x + bumpMove * (math.floor(i / 3) - 1)
+  local yy = y + bumpMove * (i % 3 - 1)
   for i, pos in ipairs(takenPositions) do
-    if pos and ((pos.x-x)^2 + (pos.y-y)^2) < bumpThresh then
-      return hints._bumpPos(x,y+bumpMove)
+    if pos and ((pos.x-xx)^2 + (pos.y-yy)^2) < bumpThresh then
+      return hints._bumpPos(x,y,i+1)
     end
   end
 
-  return {x = x,y = y}
+  return {x = xx,y = yy}
 end
 
 -- Creates a raw hint
