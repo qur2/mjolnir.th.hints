@@ -5,10 +5,13 @@ local hints = require "mjolnir.th.hints.internal"
 local screen = require "mjolnir.screen"
 local window = require "mjolnir.window"
 local modal_hotkey = require "mjolnir._asm.modal_hotkey"
+local fnutils = require "mjolnir.fnutils"
 
 local hintChars = {"A","O","E","U","I","D","H","T","N","S","P","G",
-                   "M","W","V","J","K","X","B","Y","F"}
+                   "M","W","V","J","K","X","B","Y","F","C","L","F",
+                   "Q","R","Z"}
 local usedChars = 0
+local hintsUsed = {}
 
 local openHints = {}
 local takenPositions = {}
@@ -44,6 +47,20 @@ function hints.newSpread(x,y,txt,app,screen)
   return hints.new(c.x,c.y,txt,app,screen)
 end
 
+function hints._mkHint(str)
+  fullStr = string.upper(str)
+  for c in fullStr:gmatch"%a" do
+      if false == fnutils.contains(hintsUsed, c) then
+        return c
+      end
+  end
+  for i,c in ipairs(hintChars) do
+      if false == fnutils.contains(hintsUsed, c) then
+        return c
+      end
+  end
+end
+
 -- Creates a hint centered on a window with a key that switches to that
 -- window when pressed.
 function hints.newWinChar(win,extraTxt)
@@ -54,7 +71,8 @@ function hints.newWinChar(win,extraTxt)
   if usedChars == 0 then
     modalKey:enter()
   end
-  local char = hintChars[usedChars+1]
+  local char = hints._mkHint(win:application():title()..win:title())
+  table.insert(hintsUsed, char)
   hintDict[char] = win
   usedChars = usedChars + 1
 
@@ -125,6 +143,7 @@ function hints.closeAll()
   hintDict = {}
   takenPositions = {}
   usedChars = 0
+  hintsUsed = {}
 end
 
 return hints
